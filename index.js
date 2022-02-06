@@ -1,6 +1,7 @@
 const express = require("express");
 const { MongoClient, ObjectId } = require('mongodb');
 const cors=require('cors');
+const { use } = require("express/lib/application");
 const  app=express();
 require('dotenv').config()
 const port=process.env.PORT || 5000 ;
@@ -39,6 +40,27 @@ res.json(result);
     const result=await userCollection.updateOne(filter,updateDoc,options);
     res.json(result);
   });
+  // get admin 
+  app.get('/users/:email',async(req,res)=>{
+    const email=req.params.email;
+    const query={email:email};
+    const user=await userCollection.findOne(query);
+    let isAdmin=false;
+    if(user?.role ==='admin'){
+      isAdmin=true;
+    }
+    res.json({admin:isAdmin})
+  })
+  // admin out 
+  app.put('/users/admin',async(req,res)=>{
+    const user=req.body;
+ 
+    const filter={email:user.email};
+    const updateDoc={$set:{role:'admin'}};
+    const result=await userCollection.updateOne(filter,updateDoc);
+   
+    res.send(result);
+  })
   // post api 
   app.post('/hotels',async(req,res)=>{
     const hotel=req.body;
